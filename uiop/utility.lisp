@@ -33,6 +33,7 @@
    #:match-condition-p #:match-any-condition-p ;; conditions
    #:call-with-muffled-conditions #:with-muffled-conditions
    #:lexicographic< #:lexicographic<=
+   #:unsupported-functionality ; error class
    #:parse-version #:unparse-version #:version< #:version<= #:version-compatible-p)) ;; version
 (in-package :uiop/utility)
 
@@ -620,3 +621,26 @@ or a string describing the format-control of a simple-condition."
     "Shorthand syntax for CALL-WITH-MUFFLED-CONDITIONS"
     `(call-with-muffled-conditions #'(lambda () ,@body) ,conditions)))
 
+(with-upgradability ()
+  (define-condition unsupported-functionality (error)
+    ((functionality
+      :type string                      ;short name of functionality
+      :initarg :functionality
+      :reader functionality)
+     (reason
+      :initarg :reason
+      :type (or string nil)                      ;format string
+      :reader reason
+      )
+     (reason-args
+      :initarg :reason-args
+      :type list
+      :reader reason-args
+      ))
+    (:report (lambda (c s)
+               (with-slots (functionality reason reason-args) c
+                 (if reason
+                     (format s "~a is not supported in this environment because ~?"
+                             functionality reason reason-args)
+                     (format s "~a is not supported in this environment."
+                             functionality)))))))
