@@ -364,7 +364,7 @@
                                           :direction :output
                                           :if-exists :supersede :if-does-not-exist :create)
              (setup-asdftest-logical-host :root root)
-             #+(and asdf-test-logical-pathname (not clisp))
+             #+(and asdf-test-logical-pathname)
              (assert-pathname-equal
               (make-pathname :host "ASDFTEST" :directory '(:absolute "system2" "module4")
                              :name nil :type nil)
@@ -419,9 +419,9 @@
     (clear-system "test-system")))
 
 (defun test-pathname-parsing ()
-  #-(or allegro clisp clozure cmu ecl lispworks mkcl sbcl)
+  #-(or allegro clisp clozure cmucl ecl lispworks mkcl sbcl)
   (DBG "Can't test pathname parsing: this lisp lacks SETENV support.")
-  #+(or allegro clisp clozure cmu ecl lispworks mkcl sbcl)
+  #+(or allegro clisp clozure cmucl ecl lispworks mkcl sbcl)
   (let ((old-config (uiop:getenvp "XDG_CONFIG_DIRS"))
         (old-home-config (uiop:getenvp "XDG_CONFIG_HOME")))
     (unwind-protect
