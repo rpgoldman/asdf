@@ -265,8 +265,10 @@ argument to pass to the internal RUN-PROGRAM"
                                                   (ext:process-exit-code process))))
             #+ecl (ext:external-process-status process)
             #+lispworks
+            ;; a signal is only returned on LispWorks 7+
             (multiple-value-bind (exit-code signal)
-                (funcall #'sys:pipe-exit-status
+                (funcall #+(or lispworks7+ mswindows) #'sys:pipe-exit-status
+                         #-(or lispworks7+ mswindows) #'sys:pid-exit-status
                          process :wait nil)
               (cond ((null exit-code) :running)
                     ((null signal) (values :exited exit-code))
