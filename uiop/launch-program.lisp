@@ -235,8 +235,8 @@ argument to pass to the internal RUN-PROGRAM"
       #+clozure (ccl:external-process-id process)
       #+ecl (ext:external-process-pid process)
       #+(or cmucl scl) (ext:process-pid process)
-      #+lispworks7+ (sys:pipe-pid process)
-      #+(and lispworks (not lispworks7+)) process
+      #+(or lispworks6.1 lispworks7+) (sys:pipe-pid process)
+      #+(and lispworks (not (or lispworks6.1 lispworks7+))) process
       #+mkcl (mkcl:process-id process)
       #+sbcl (sb-ext:process-pid process)
       #-(or abcl allegro clozure cmucl ecl mkcl lispworks sbcl scl)
@@ -265,10 +265,8 @@ argument to pass to the internal RUN-PROGRAM"
                                                   (ext:process-exit-code process))))
             #+ecl (ext:external-process-status process)
             #+lispworks
-            ;; a signal is only returned on LispWorks 7+
             (multiple-value-bind (exit-code signal)
-                (funcall #+lispworks7+ #'sys:pipe-exit-status
-                         #-lispworks7+ #'sys:pid-exit-status
+                (funcall #'sys:pipe-exit-status
                          process :wait nil)
               (cond ((null exit-code) :running)
                     ((null signal) (values :exited exit-code))
@@ -342,8 +340,7 @@ might otherwise be irrevocably lost."
                         (if (eq status :signaled)
                             (values nil code)
                             code))
-                #+lispworks (funcall #+lispworks7+ #'sys:pipe-exit-status
-                                     #-lispworks7+ #'sys:pid-exit-status
+                #+lispworks (funcall #'sys:pipe-exit-status
                                      process :wait t)
                 #+mkcl (let ((code (mkcl:join-process process)))
                          (if (stringp code)
